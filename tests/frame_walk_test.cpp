@@ -8,8 +8,8 @@
 
 namespace {
 
-// Builds one wire-format message: a 2-byte big-endian length prefix followed
-// by `total_len` bytes, the first of which is the message type.
+// Builds one wire format message: a 2 byte big endian length prefix followed
+// by total_len bytes
 std::vector<std::byte> make_message(char type, uint16_t total_len) {
     std::vector<std::byte> msg(static_cast<std::size_t>(total_len) + 2, std::byte{0});
     msg[0] = static_cast<std::byte>(total_len >> 8);
@@ -24,7 +24,7 @@ std::vector<std::byte> concat(std::initializer_list<std::vector<std::byte>> part
     return out;
 }
 
-}  // namespace
+}
 
 TEST(FrameWalk, EmptyBufferProducesNoMessages) {
     const auto stats = matchline::count_messages({});
@@ -55,8 +55,6 @@ TEST(FrameWalk, RepeatedTypeIsCountedMultipleTimes) {
 
 TEST(FrameWalk, TruncatedFinalMessageStopsWithoutReadingPastBuffer) {
     const auto full = concat({make_message('S', 12), make_message('A', 36)});
-    // Cut the second message short so its declared length overruns the buffer:
-    // msg S is 14 bytes total, then 5 bytes of msg A's declared-36-byte body.
     const std::vector<std::byte> data(full.begin(), full.begin() + 14 + 5);
 
     const auto stats = matchline::count_messages(data);
@@ -64,7 +62,6 @@ TEST(FrameWalk, TruncatedFinalMessageStopsWithoutReadingPastBuffer) {
     EXPECT_TRUE(stats.truncated);
     EXPECT_EQ(stats.counts[static_cast<unsigned char>('S')], 1u);
     EXPECT_EQ(stats.counts[static_cast<unsigned char>('A')], 0u);
-    // Consumed msg S (14 bytes) plus the truncated msg's 2-byte length prefix.
     EXPECT_EQ(stats.final_offset, 16u);
 }
 
