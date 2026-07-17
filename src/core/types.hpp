@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <string>
 
 namespace matchline {
@@ -63,3 +64,10 @@ private:
 };
 
 }
+
+template <>
+struct std::hash<matchline::OrderId> {
+    std::size_t operator()(matchline::OrderId id) const noexcept {
+        return std::hash<uint64_t>{}(id.value());
+    }
+};
