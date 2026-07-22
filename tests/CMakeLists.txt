@@ -2,6 +2,7 @@ add_executable(matchline_tests
   frame_walk_test.cpp
   parser_test.cpp
   reference_book_test.cpp
+  replay_handler_test.cpp
 )
 target_link_libraries(matchline_tests PRIVATE matchline GTest::gtest_main)
 
